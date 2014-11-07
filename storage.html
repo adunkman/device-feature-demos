@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <label>
+      Local Storage:
+      <textarea class="js-local-storage"></textarea>
+    </label>
+
+    <label>
+      Session Storage:
+      <textarea class="js-session-storage"></textarea>
+    </label>
+
+    <script>
+      (function () {
+        var localInput = document.querySelector(".js-local-storage");
+        var sessionInput = document.querySelector(".js-session-storage");
+        var keyName = "stored-value";
+
+        localInput.value = window.localStorage.getItem(keyName);
+        sessionInput.value = window.sessionStorage.getItem(keyName);
+
+        localInput.addEventListener("change", function (evt) {
+          window.localStorage.setItem(keyName, localInput.value);
+        });
+
+        sessionInput.addEventListener("change", function (evt) {
+          window.sessionStorage.setItem(keyName, sessionInput.value);
+        });
+
+        window.addEventListener("storage", function (evt) {
+          if (evt.key != keyName) {
+            return;
+          }
+
+          var input = evt.storageArea == window.localStorage ? localInput : sessionInput;
+          input.value = evt.newValue;
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <h1>Drop a file ovah here</h1>
+
+    <pre class="js-info"></pre>
+
+    <script>
+      (function () {
+        var info = document.querySelector(".js-info");
+
+        document.addEventListener("dragover", function (evt) {
+          evt.preventDefault();
+        });
+
+        document.addEventListener("drop", function (evt) {
+          info.textContent = JSON.stringify(evt.dataTransfer.files, null, 2);
+          evt.preventDefault();
+        });
+      })();
+    </script>
+  </body>
+</html>
