@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <button type="button" class="js-look">Look at me!</button>
+
+    <video class="js-video-stream"></video>
+
+    <p class="js-output"></p>
+
+    <script>
+      (function () {
+        var output = document.querySelector(".js-output");
+        var video = document.querySelector(".js-video-stream");
+
+        window.navigator.getUserMedia =
+          window.navigator.getUserMedia ||
+          window.navigator.webkitGetUserMedia ||
+          window.navigator.mozGetUserMedia;
+
+        var showVideoStream = function (stream) {
+          output.textContent = "";
+          video.src = window.URL.createObjectURL(stream);
+          video.play();
+        };
+
+        var showError = function (err) {
+          output.textContent = (function () {
+            switch (err.code) {
+              case err.PERMISSION_DENIED:
+                return "You denied the request for your camera.";
+              case err.NOT_SUPPORTED_ERROR:
+                return "Your browser does not support streaming your camera.";
+              case err.MANDATORY_UNSATISFIED_ERROR:
+                return "Your device does not have a camera.";
+              default:
+                return "Your device is being weird.";
+            }
+          })();
+        };
+
+        document.querySelector(".js-look").addEventListener("click", function () {
+          output.textContent = "Asking for access to your camera…";
+          window.navigator.getUserMedia({
+            audio: false,
+            video: true
+          }, showVideoStream, showError);
+        });
+      })();
+    </script>
+  </body>
+</html>

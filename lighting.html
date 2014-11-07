@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <style>
+      body {
+        transition: all 1s linear;
+      }
+      body.dark {
+        background-color: #222;
+        color: #ddd;
+      }
+    </style>
+  </head>
+  <body>
+    <p>Threshold: <input type="number" class="js-threshold" value="50"></p>
+    <p>Last lighting event: <span class="js-lux"></span><p>
+
+    <script>
+      (function () {
+        var threshold = document.querySelector(".js-threshold");
+        var status = document.querySelector(".js-lux");
+
+        window.addEventListener("devicelight", function (evt) {
+          var lux = evt.value;
+
+          status.textContent = lux + " lux";
+          document.body.className = lux <= parseInt(threshold.value, 10) ? "dark" : "light";
+        });
+      })();
+    </script>
+  </body>
+</html>

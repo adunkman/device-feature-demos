@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body class="web-workers">
+    <button type="button" class="js-generate-on-ui-thread">Sort using UI Thread</button>
+    <button type="button" class="js-generate-with-web-worker">Sort using Background Thread</button>
+
+    <p>Number of milliseconds since last UI render: <span class="js-timing"></span> ms.</p>
+    <p>Longest delay: <span class="js-high-water"></span> ms.</p>
+
+    <p class="js-results"></p>
+
+    <script type="text/plain">
+      (function () {
+        var items = [];
+        var start = performance.now();
+
+        for (var i = 0; i < 1000000; i++) {
+          items.push(Math.random());
+        };
+
+        items.sort();
+        var results = [
+          "min: " + items[0],
+          "max: " + items[items.length - 1],
+          "time: " + (performance.now() - start)
+        ].join(", ");
+
+        var isWebWorker = !this.document;
+
+        if (isWebWorker) {
+          postMessage(results);
+          close();
+        }
+        else {
+          postMessage(results, "*");
+        }
+      })();
+    </script>
+    <script>
+      (function () {
+        var script = document.querySelector("script[type='text/plain']").textContent;
+        var results = document.querySelector(".js-results");
+        var timing = document.querySelector(".js-timing");
+        var highWater = document.querySelector(".js-high-water");
+        var lastTick = window.performance.now();
+        var highWaterDiff = 0;
+
+        document.querySelector(".js-generate-on-ui-thread").addEventListener("click", function () {
+          eval(script);
+        });
+
+        document.querySelector(".js-generate-with-web-worker").addEventListener("click", function () {
+          var scriptDataURI = window.URL.createObjectURL(new Blob([script], {
+            type: "text/javascript"
+          }));
+
+          var thread = new Worker(scriptDataURI);
+
+          thread.addEventListener("message", function (evt) {
+            results.textContent = evt.data;
+          });
+
+          thread.postMessage("");
+        });
+
+        window.addEventListener("message", function (evt) {
+          results.textContent = evt.data;
+        });
+
+        var logTiming = function () {
+          var thisTick = window.performance.now();
+          var diff = thisTick - lastTick;
+
+          if (diff > highWaterDiff) {
+            highWaterDiff = diff;
+            highWater.textContent = highWaterDiff;
+          }
+
+          timing.textContent = thisTick - lastTick;
+          lastTick = thisTick;
+
+          window.setTimeout(logTiming, 0);
+        };
+
+        logTiming();
+      })();
+    </script>
+  </script>
+</html>

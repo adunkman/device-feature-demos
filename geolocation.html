@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <button type="button" class="js-locate">Locate me</button>
+
+    <pre class="js-output"></pre>
+
+    <script>
+      (function () {
+        var output = document.querySelector(".js-output");
+
+        var showLocation = function (position) {
+          output.textContent = "Location: " + JSON.stringify(position.coords, null, 2);
+        };
+
+        var showError = function (err) {
+          output.textContent = (function () {
+            switch (err.code) {
+              case err.PERMISSION_DENIED:
+                return "You denied the request for your location.";
+              case err.POSITION_UNAVAILABLE:
+                return "Your device cannot locate you right now.";
+              case err.TIMEOUT:
+                return "Your device couldn’t locate you in a timely fashion.";
+              default:
+                return "Your device is being weird.";
+            }
+          })();
+        };
+
+        document.querySelector(".js-locate").addEventListener("click", function () {
+          output.textContent = "Asking for your location…";
+          navigator.geolocation.getCurrentPosition(showLocation, showError);
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <pre class="js-info"></pre>
+    <pre class="js-updates"></pre>
+
+    <script>
+      (function () {
+        var info = document.querySelector(".js-info");
+        var updates = document.querySelector(".js-updates");
+
+        var prettyFormat = function (seconds) {
+          var minutes = seconds / 60 % 60;
+          var hours = Math.floor(seconds / 60 / 60);
+
+          minutes = ("" + minutes).length == 1 ? "0" + minutes : minutes;
+
+          return hours + ":" + minutes;
+        };
+
+        window.navigator.getBattery().then(function (battery) {
+          info.textContent = JSON.stringify(battery, null, 2);
+          updates.textContent = prettyFormat(battery.dischargingTime) + " remaining";
+
+          battery.addEventListener("dischargingtimechange", function (evt) {
+            updates.textContent += "\r\n" + prettyFormat(battery.dischargingTime) + " remaining";
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

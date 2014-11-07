@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+
+    <style>
+      svg {
+        height: 100%;
+        left: 0;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <svg viewBox="0 0 200 200">
+      <circle class="js-audio-output" cx="100" cy="100"></circle>
+    </svg>
+
+    <button type="button" class="js-listen">Hey! Listen!</button>
+
+    <p class="js-output"></p>
+
+    <script>
+      (function () {
+        var output = document.querySelector(".js-output");
+        var visualizer = document.querySelector(".js-audio-output");
+
+        window.navigator.getUserMedia =
+          window.navigator.getUserMedia ||
+          window.navigator.webkitGetUserMedia ||
+          window.navigator.mozGetUserMedia;
+
+        var showAudioStream = function (stream) {
+          output.textContent = "";
+
+          var context = new AudioContext();
+          var analyser = context.createAnalyser();
+          var microphone = context.createMediaStreamSource(stream);
+          var processor = context.createScriptProcessor(2048, 1, 1);
+
+          // chrome issue #360378 — processor is garbage collected unless a
+          // specific reference is stored to it.
+          context.processor = processor;
+
+          analyser.smoothingTimeConstant = 0.3;
+          analyser.fftSize = 2048;
+
+          microphone.connect(analyser);
+          analyser.connect(processor);
+          processor.connect(context.destination);
+
+          processor.onaudioprocess = function () {
+            var volumes = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(volumes);
+
+            var volume = Array.prototype.reduce.call(volumes, function (a, b) {
+              return a + b;
+            }, 0) / volumes.length;
+
+            visualizer.setAttribute("r", 5 + volume);
+          };
+        };
+
+        var showError = function (err) {
+          output.textContent = (function () {
+            switch (err.code) {
+              case err.PERMISSION_DENIED:
+                return "You denied the request for your microphone.";
+              case err.NOT_SUPPORTED_ERROR:
+                return "Your browser does not support streaming your microphone.";
+              case err.MANDATORY_UNSATISFIED_ERROR:
+                return "Your device does not have a microphone.";
+              default:
+                return "Your device is being weird.";
+            }
+          })();
+        };
+
+        document.querySelector(".js-listen").addEventListener("click", function () {
+          output.textContent = "Asking for access to your microphone…";
+          window.navigator.getUserMedia({
+            video: false,
+            audio: true
+          }, showAudioStream, showError);
+        });
+      })();
+    </script>
+  </body>
+</html>

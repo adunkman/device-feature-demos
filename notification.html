@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <button type="button" class="js-notify">Send me a notification</button>
+
+    <p class="js-results"></p>
+
+    <script>
+      (function () {
+        var sendNotification = function () {
+          new Notification("Here’s your notification, friends!", {
+            body: "Notifications like this can have a body of text as well.",
+            icon: "image.jpg"
+          });
+        };
+
+        var showError = function () {
+          document.querySelector(".js-results").textContent = "Permission denied.";
+        };
+
+        document.querySelector(".js-notify").addEventListener("click", function () {
+          if (window.Notification.permission == "granted") {
+            sendNotification();
+          }
+          else if (window.Notification.permission != "denied") {
+            Notification.requestPermission(function (permission) {
+              if (permission === "granted") {
+                sendNotification();
+              }
+              else {
+                showError();
+              }
+            });
+          }
+          else {
+            showError();
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>
