@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <button type="button" class="js-generate">Generate 100 entries</button>
+
+    <script>
+      (function () {
+        var version = 2;
+        var connection = window.indexedDB.open("my-database", version);
+
+        connection.onupgradeneeded = function () {
+          var store = connection.result.createObjectStore("numbers", { keyPath: "id" });
+
+          store.createIndex("category_idx", "category", { unique: false });
+        };
+
+        connection.onsuccess = function () {
+          var search = function () {
+            var store = connection.result.transaction("numbers").objectStore("numbers");
+
+            store.openCursor().onsuccess = function (evt) {
+              var cursor = evt.target.result;
+            };
+          };
+
+          search();
+
+          document.querySelector(".js-generate").addEventListener("click", function () {
+            var transaction = connection.result.transaction("numbers", "readwrite");
+            var store = transaction.objectStore("numbers");
+            var now = new Date().getTime();
+            var categories = [ "a", "b", "c" ];
+
+            for (var i = 0; i < 100; i++) {
+              (function (id) {
+                store.add({
+                  id: id,
+                  category: categories[Math.round(Math.random() * 10) % categories.length],
+                  number: Math.random()
+                });
+              })(now + i);
+            }
+
+            transaction.oncomplete = function () {
+              search();
+            };
+          });
+        };
+      })();
+    </script>
+  </body>
+</html>
