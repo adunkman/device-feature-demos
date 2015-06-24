@@ -6,19 +6,23 @@
   <body>
     <button type="button" class="js-notify">Send me a notification</button>
 
-    <p class="js-results"></p>
+    <pre class="js-results"></pre>
 
     <script>
       (function () {
+        var results = document.querySelector(".js-results");
+
         var sendNotification = function () {
           new Notification("Here’s your notification, friends!", {
             body: "Notifications like this can have a body of text as well.",
             icon: "image.jpg"
-          });
+          }).onclick = function () {
+            results.textContent += "The notification was clicked.\r\n";
+          };
         };
 
         var showError = function () {
-          document.querySelector(".js-results").textContent = "Permission denied.";
+          results.textContent += "Permission denied.\r\n";
         };
 
         document.querySelector(".js-notify").addEventListener("click", function () {
