@@ -13,21 +13,44 @@
         var updates = document.querySelector(".js-updates");
 
         var prettyFormat = function (seconds) {
-          var minutes = seconds / 60 % 60;
-          var hours = Math.floor(seconds / 60 / 60);
+          if (isFinite(seconds)) {
+            var minutes = seconds / 60 % 60;
+            var hours = Math.floor(seconds / 60 / 60);
 
-          minutes = ("" + minutes).length == 1 ? "0" + minutes : minutes;
+            minutes = ("" + minutes).length == 1 ? "0" + minutes : minutes;
 
-          return hours + ":" + minutes;
+            return hours + ":" + minutes;
+          }
+          else {
+            return "?:??";
+          }
         };
 
         window.navigator.getBattery().then(function (battery) {
-          info.textContent = JSON.stringify(battery, null, 2);
-          updates.textContent = prettyFormat(battery.dischargingTime) + " remaining";
+          var printStatus = function () {
+            if (battery.charging) {
+              updates.textContent += "Battery charging (" + battery.level * 100 + "%), " + prettyFormat(battery.chargingTime) + " remaining\r\n";
+            }
+            else {
+              updates.textContent += "Battery discharging (" + battery.level * 100 + "%), " + prettyFormat(battery.dischargingTime) + " remaining\r\n";
+            }
+          };
 
-          battery.addEventListener("dischargingtimechange", function (evt) {
-            updates.textContent += "\r\n" + prettyFormat(battery.dischargingTime) + " remaining";
-          });
+          info.textContent = JSON.stringify({
+            charging: battery.charging,
+            chargingTime: battery.chargingTime,
+            dischargingTime: battery.dischargingTime,
+            level: battery.level,
+            onchargingchange: battery.onchargingchange,
+            onchargingtimechange: battery.onchargingtimechange,
+            ondischargingtimechange: battery.ondischargingtimechange,
+            onlevelchange: battery.onlevelchange
+          }, null, 2);
+
+          printStatus();
+          battery.addEventListener("dischargingtimechange", printStatus);
+          battery.addEventListener("chargingtimechange", printStatus);
+          battery.addEventListener("chargingchange", printStatus);
         });
       })();
     </script>
