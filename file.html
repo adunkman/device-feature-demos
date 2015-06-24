@@ -12,12 +12,41 @@
       (function () {
         var info = document.querySelector(".js-info");
 
+        var displayImage = function (file) {
+          var reader = new FileReader();
+
+          reader.onloadend = function () {
+            var img = document.createElement("img");
+            img.src = reader.result;
+            document.body.appendChild(img);
+          };
+
+          reader.readAsDataURL(file);
+        };
+
         document.addEventListener("dragover", function (evt) {
-          evt.preventDefault();
+          evt.preventDefault(); // stops navigate-to-file behavior
         });
 
         document.addEventListener("drop", function (evt) {
-          info.textContent = JSON.stringify(evt.dataTransfer.files, null, 2);
+          info.textContent += evt.dataTransfer.files.length + " file(s) dropped.\r\n";
+
+          for (var i = 0; i < evt.dataTransfer.files.length; i++) {
+            var file = evt.dataTransfer.files[i];
+
+            info.textContent += JSON.stringify({
+              lastModified: file.lastModified,
+              lastModifiedDate: file.lastModifiedDate,
+              name: file.name,
+              size: file.size,
+              type: file.type
+            }, null, 2) + "\r\n";
+
+            if (/^image/.test(file.type)) {
+              displayImage(file);
+            }
+          };
+
           evt.preventDefault();
         });
       })();
